@@ -4,15 +4,20 @@ import {Grid, Card, Button, Box} from '@material-ui/core'
 import {useRouter} from 'next/router'
 import {ITrack} from '../../types/track'
 import TrackList from '../../components/TrackList'
+import {useTypedSelector} from '../../hooks/useTypedSelector'
+import {NextThunkDispatch, wrapper} from "../../store";
+import {fetchTracks} from "../../store/actions-creators/track";
 
 const Index = () => {
     const router = useRouter()
-    const tracks: ITrack[] = [
-        { _id: '1', name: 'Трек 1', artist: 'Исполнитель 1', text: 'Какой-то текст 1', listens: 5, 
-        audio: 'http://localhost:5000/audio/track2.mp3', picture: 'http://localhost:5000/image/picture2.jpg', comments: [] },
-        { _id: '2', name: 'Трек 2', artist: 'Исполнитель 2', text: 'Какой-то текст 2', listens: 6, 
-        audio: 'http://localhost:5000/audio/track3.mp3', picture: 'http://localhost:5000/image/picture3.jpg', comments: [] },
-    ]
+    const {tracks, error} = useTypedSelector(state => state.track)
+
+    if (error) {
+        return <MainLayout>
+            <h1>{error}</h1>
+        </MainLayout>
+    }
+
     return (
         <MainLayout>
 
@@ -32,3 +37,8 @@ const Index = () => {
 }
 
 export default Index
+
+export const getServerSideProps = wrapper.getServerSideProps( async ({ store }) => {
+    const dispatch = store.dispatch as NextThunkDispatch
+    await dispatch(await fetchTracks())
+})
